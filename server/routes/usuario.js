@@ -6,6 +6,8 @@ const _ = require('underscore'); // El estandar es usar el guión bajo
 
 const Usuario = require('../../models/usuario'); // Con la U mayusucla para seguir estandar
 
+const { verificaToken, verificaAdmin_Role} = require('../middleware/autentication'); // Esta es otra forma de incluir la libreria
+
 const app = express();
 
 
@@ -14,13 +16,17 @@ app.get('/', function (req, res) {
 })
 
 
-app.get('/usuario', function (req, res) {
+app.get('/usuario', verificaToken, (req, res) => {
     
+    /* return res.json({
+        usuario: req.usuario,
+        nombre: req.usuario.nombre,
+        email: req.usuario.email
+    }); */
+
     // Los parametros opcionales caen desde el req.query
     // Si no viene la variable desde entonces se propone la primera página
     let desde = Number(req.query.desde) || 0;
-
-
     let limite = Number(req.query.limite) || 5;
 
     Usuario.find({ estado: true }, 'nombre email role estado google img')
@@ -50,7 +56,7 @@ app.get('/usuario', function (req, res) {
 
 });
   
-app.post('/usuario', function (req, res) {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
     
     let body = req.body;
 
@@ -100,7 +106,7 @@ app.post('/usuario', function (req, res) {
 
 });
 
-app.put('/usuario/:id', function (req, res) {
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], function (req, res) {
 
     let id = req.params.id;
     let body = _.pick( req.body, ['nombre', 'email', 'img', 'role', 'estado'] );
@@ -136,7 +142,7 @@ app.put('/usuario/:id', function (req, res) {
 
 });
 
-app.delete('/usuario1/:id', function (req, res) {
+app.delete('/usuario1/:id', verificaToken, (req, res) => {
     
     let id = req.params.id;
 
@@ -165,7 +171,7 @@ app.delete('/usuario1/:id', function (req, res) {
 
 });
 
-app.delete('/usuario/:id', function (req, res) {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], function (req, res) {
     
     let id = req.params.id;
     // Opción 2
