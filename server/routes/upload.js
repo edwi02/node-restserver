@@ -63,6 +63,27 @@ app.put('/upload/:tipo/:id', function(req, res) {
     // let nombreArchivo = `${ id }-${ new Date().getMilliseconds()  }.${ extension }`;
     let nombreArchivo = `${ id }-${ uniq  }.${ extension }`;
 
+    try {
+        fs.mkdirSync(path.resolve(__dirname, `../../uploads`));
+        console.log(path.resolve(__dirname, `../../uploads`));
+      } catch (err) {
+        if (err.code !== 'EEXIST') {
+          return res.status(500).json({
+            ok:false,
+            error: err
+          });
+        }
+      }
+      try {
+        fs.mkdirSync(path.resolve(__dirname, `../../uploads/${tipo}`));
+      } catch (err) {
+        if (err.code !== 'EEXIST') {
+          return res.status(500).json({
+            ok:false,
+            error: err
+          });
+        }
+      }
 
     // Mover la imgen 
     archivo.mv(`uploads/${ tipo }/${ nombreArchivo }`, (err) => {
@@ -131,8 +152,6 @@ function imagenUsuario(id, res, nombreArchivo) {
 
 
 }
-
-
 
 function imagenProducto(id, res, nombreArchivo) {
 
@@ -231,13 +250,11 @@ function imagenProducto(id, res, nombreArchivo) {
 
 }
 
-
-
-async function borraArchivo(nombreImagen, tipo) {
+function borraArchivo(nombreImagen, tipo) {
 
     let pathImagen = path.resolve(__dirname, `../../uploads/${ tipo }/${ nombreImagen }`);
     if (fs.existsSync(pathImagen)) {
-        await fs.unlinkSync(pathImagen);
+        fs.unlinkSync(pathImagen);
     }
 
 }
